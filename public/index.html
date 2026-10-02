@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Voice Harmonics Analyzer</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Voice Harmonics Analyzer</h1>
+      <p class="sub">Record your voice, listen back, then break each note into its harmonic series.</p>
+    </div>
+    <div class="settings">
+      <label>A4 <input id="a4" type="number" min="400" max="480" step="0.5" value="440"> Hz</label>
+      <label>Notation
+        <select id="notation">
+          <option value="en">C D E (English)</option>
+          <option value="fr">Do Ré Mi (Français)</option>
+        </select>
+      </label>
+      <label title="Frames quieter than this are ignored">Noise gate
+        <input id="gate" type="number" min="-90" max="-10" step="1" value="-50"> dBFS</label>
+    </div>
+  </header>
+
+  <main>
+    <div id="global-msg" class="msg hidden" role="alert"></div>
+
+    <section class="card" id="mic-card">
+      <h2><span class="step">1</span> Microphone</h2>
+      <div class="row">
+        <button id="mic-enable" class="primary">Enable microphone</button>
+        <select id="mic-select" disabled aria-label="Input device"><option>— no device —</option></select>
+        <button id="mic-refresh" disabled title="Rescan devices">↻ Rescan</button>
+      </div>
+      <div class="meter-row">
+        <div class="meter" aria-label="Input level"><div id="meter-bar" class="meter-bar"></div><div id="meter-peak" class="meter-peak"></div></div>
+        <span id="meter-db" class="mono">— dBFS</span>
+        <span id="clip-led" class="led" title="Clipping">CLIP</span>
+      </div>
+      <p id="mic-info" class="hint">The browser will ask for permission. Echo cancellation, noise suppression and automatic gain are switched off, because they distort harmonics.</p>
+    </section>
+
+    <section class="card" id="rec-card">
+      <h2><span class="step">2</span> Record</h2>
+      <div class="row">
+        <input id="take-name" type="text" maxlength="60" placeholder="Take name (optional)" aria-label="Take name">
+        <button id="rec-start" class="record" disabled>● Record</button>
+        <button id="rec-stop" disabled>■ Stop</button>
+        <span id="rec-timer" class="mono timer">0.0 s</span>
+      </div>
+      <div class="row">
+        <label class="file-btn">Import audio file…
+          <input id="file-input" type="file" accept="audio/*,.wav,.mp3,.ogg,.flac,.m4a">
+        </label>
+        <span class="hint">Tip: sing a steady vowel ("aaa") for 2–5 s. Maximum <span id="max-sec"></span> s per take.</span>
+      </div>
+    </section>
+
+    <section class="card" id="list-card">
+      <div class="card-head">
+        <h2><span class="step">3</span> Recordings <span id="rec-count" class="badge">0</span></h2>
+        <button id="delete-all" class="danger small" disabled>Delete all</button>
+      </div>
+      <p class="hint">Takes are stored only in this browser. Listen to a take before analysing it.</p>
+      <ul id="rec-list" class="rec-list"></ul>
+      <p id="rec-empty" class="empty">No recordings yet.</p>
+    </section>
+
+    <section class="card hidden" id="result-card">
+      <div class="card-head">
+        <h2><span class="step">4</span> Analysis — <span id="result-title"></span></h2>
+        <button id="reanalyse" class="small">Re-analyse</button>
+      </div>
+      <div id="result-warnings"></div>
+      <div id="summary" class="summary"></div>
+
+      <h3>Pitch over time</h3>
+      <div class="canvas-wrap"><canvas id="pitch-canvas" height="260"></canvas></div>
+
+      <h3>Notes found <span class="hint">(click a row to see its harmonics)</span></h3>
+      <div class="table-wrap"><table id="seg-table" class="data"></table></div>
+
+      <div id="seg-detail" class="hidden">
+        <h3>Spectrum of <span id="seg-title"></span></h3>
+        <div class="canvas-wrap"><canvas id="spec-canvas" height="300"></canvas></div>
+        <h3>Harmonic series</h3>
+        <div class="table-wrap"><table id="harm-table" class="data"></table></div>
+        <p class="hint">“¢ vs n·f0” is how far each measured harmonic is from the exact multiple of the fundamental.
+          The level is relative to the strongest harmonic (0 dB). Harmonics shown in grey were not clearly above the noise.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>Audio stays in your browser; it is sent to the server only for analysis and is never stored there.</footer>
+</body>
+</html>
