@@ -1,4 +1,5 @@
 # Tone Harmonics — Vercel edition
+# Claude Code Build : 02-10-2026
 
 The Voice Harmonics Analyzer, adapted to deploy on **Vercel**. The Render
 edition lives separately in `../code`.
